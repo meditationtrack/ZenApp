@@ -178,6 +178,14 @@ body.candle-mode .customize-panel {
     text-shadow: 0 0 10px rgba(232, 160, 64, 0.3);
 }
 
+/* Landscape mode - move phrases lower */
+@media (orientation: landscape) {
+    .candle-phrase {
+        bottom: 8%;
+        font-size: 1rem;
+    }
+}
+
 .candle-phrase.visible {
     opacity: 1;
 }
@@ -1839,6 +1847,7 @@ nav {
 .auth-content {
     max-width: 400px;
     text-align: center;
+    padding-top: calc(env(safe-area-inset-top, 20px) + 1rem);
 }
 
 .auth-content h2 {
