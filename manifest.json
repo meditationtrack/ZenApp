@@ -1,0 +1,22 @@
+{
+    "name": "Registro de Meditación",
+    "short_name": "ZenApp",
+    "description": "Aplicación para registrar y seguir tu práctica de meditación",
+    "start_url": "/",
+    "display": "fullscreen",
+    "orientation": "portrait",
+    "background_color": "#1a1a2e",
+    "theme_color": "#1a1a2e",
+    "icons": [
+        {
+            "src": "meditateicon.png",
+            "sizes": "192x192",
+            "type": "image/png"
+        },
+        {
+            "src": "meditateicon.png",
+            "sizes": "512x512",
+            "type": "image/png"
+        }
+    ]
+}

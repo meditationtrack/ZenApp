@@ -2,8 +2,13 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#1a1a2e">
     <title>Registro de Meditación</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="meditateicon.png">
     <link rel="stylesheet" href="styles.css?v=9">
 </head>
 <body>
@@ -41,6 +46,7 @@
         <header>
             <p id="welcome-name" class="welcome-message" style="display: none;"></p>
             <h1 id="app-title">Registro de Meditación</h1>
+            <button id="fullscreen-btn" class="fullscreen-btn" title="Pantalla completa">⛶</button>
             <button id="settings-btn" class="settings-btn" title="Settings">⋮</button>
             <nav>
                 <button class="nav-btn active" data-view="dashboard">🌿 Panel</button>

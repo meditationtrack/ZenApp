@@ -246,6 +246,7 @@ function initApp() {
     initTimer();
     initModal();
     initSettings();
+    initFullscreenButton();
     updateHeaderEmoji();
     setTodayDate();
     initSignOutButton();
@@ -857,6 +858,29 @@ function showConfirmModal(callback) {
     
     confirmModal.classList.add('active');
 }
+
+// Fullscreen button functionality
+function initFullscreenButton() {
+    const fullscreenBtn = document.getElementById('fullscreen-btn');
+    if (fullscreenBtn) {
+        fullscreenBtn.addEventListener('click', toggleAppFullscreen);
+    }
+    
+    // Try to auto-enter fullscreen on first user interaction
+    // (browsers require user gesture for fullscreen)
+    const autoFullscreen = () => {
+        if (!isNativeFullscreen()) {
+            requestNativeFullscreen();
+        }
+        // Remove listeners after first interaction
+        document.removeEventListener('click', autoFullscreen);
+        document.removeEventListener('touchstart', autoFullscreen);
+    };
+    
+    document.addEventListener('click', autoFullscreen, { once: true });
+    document.addEventListener('touchstart', autoFullscreen, { once: true });
+}
+
 // Settings functionality
 function initSettings() {
     const settingsBtn = document.getElementById('settings-btn');
@@ -2126,6 +2150,45 @@ function exitNativeFullscreen() {
             document.mozCancelFullScreen();
         } else if (document.msExitFullscreen) {
             document.msExitFullscreen();
+        }
+    }
+}
+
+// Check if currently in native fullscreen
+function isNativeFullscreen() {
+    return !!(document.fullscreenElement || document.webkitFullscreenElement || 
+              document.mozFullScreenElement || document.msFullscreenElement);
+}
+
+// Toggle app fullscreen mode
+function toggleAppFullscreen() {
+    const btn = document.getElementById('fullscreen-btn');
+    if (isNativeFullscreen()) {
+        exitNativeFullscreen();
+        btn.textContent = '⛶';
+        btn.title = 'Pantalla completa';
+    } else {
+        requestNativeFullscreen();
+        btn.textContent = '⛶';
+        btn.title = 'Salir de pantalla completa';
+    }
+}
+
+// Update fullscreen button when fullscreen state changes
+document.addEventListener('fullscreenchange', updateFullscreenButton);
+document.addEventListener('webkitfullscreenchange', updateFullscreenButton);
+document.addEventListener('mozfullscreenchange', updateFullscreenButton);
+document.addEventListener('MSFullscreenChange', updateFullscreenButton);
+
+function updateFullscreenButton() {
+    const btn = document.getElementById('fullscreen-btn');
+    if (btn) {
+        if (isNativeFullscreen()) {
+            btn.textContent = '⛶';
+            btn.title = 'Salir de pantalla completa';
+        } else {
+            btn.textContent = '⛶';
+            btn.title = 'Pantalla completa';
         }
     }
 }
