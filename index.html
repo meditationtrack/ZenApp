@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro de Meditación</title>
+    <link rel="stylesheet" href="styles.css?v=9">
+</head>
+<body>
+    <!-- Firebase Authentication Modal -->
+    <div id="auth-modal" class="modal" style="display: none;">
+        <div class="modal-content auth-content">
+            <h2>Registro de Meditación</h2>
+            <p>Inicia sesión para sincronizar tus datos de meditación en todos los dispositivos</p>
+            <div id="auth-forms">
+                <div id="signin-form" class="auth-form">
+                    <input type="email" id="signin-email" placeholder="Correo Electrónico" required>
+                    <input type="password" id="signin-password" placeholder="Contraseña" required>
+                    <button id="signin-btn" class="btn-primary">Iniciar Sesión</button>
+                    <p class="auth-switch">¿No tienes una cuenta? <a href="#" id="show-signup">Registrarse</a></p>
+                </div>
+                <div id="signup-form" class="auth-form" style="display: none;">
+                    <input type="text" id="signup-name" placeholder="Nombre" required>
+                    <input type="email" id="signup-email" placeholder="Correo Electrónico" required>
+                    <input type="password" id="signup-password" placeholder="Contraseña (mínimo 6 caracteres)" required>
+                    <button id="signup-btn" class="btn-primary">Crear Cuenta</button>
+                    <p class="auth-switch">¿Ya tienes una cuenta? <a href="#" id="show-signin">Iniciar sesión</a></p>
+                </div>
+            </div>
+            <div id="auth-error" class="auth-error" style="display: none;"></div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast">
+        <span class="toast-icon">✨</span>
+        <span class="toast-message">¡Sesión guardada exitosamente!</span>
+    </div>
+
+    <div class="container">
+        <header>
+            <p id="welcome-name" class="welcome-message" style="display: none;"></p>
+            <h1 id="app-title">Registro de Meditación</h1>
+            <button id="settings-btn" class="settings-btn" title="Settings">⋮</button>
+            <nav>
+                <button class="nav-btn active" data-view="dashboard">🌿 Panel</button>
+                <button class="nav-btn" data-view="timer">🧘 Meditar</button>
+                <button class="nav-btn" data-view="log">✍️ Registrar</button>
+                <button class="nav-btn" data-view="stats">☯️ Stats</button>
+            </nav>
+        </header>
+
+        <!-- Dashboard View -->
+        <section id="dashboard-view" class="view active">
+            <div class="stats-grid">
+                <div class="stat-box">
+                    <div class="stat-value" id="month-days-count">0</div>
+                    <div class="stat-label">días este mes</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-value" id="month-time">0</div>
+                    <div class="stat-label" id="month-label">en Enero</div>
+                </div>
+            </div>
+
+            <div class="calendar-section">
+                <div class="calendar-controls">
+                    <button id="prev-month">‹</button>
+                    <h3 id="calendar-title">Enero 2026</h3>
+                    <button id="next-month">›</button>
+                </div>
+                <div class="calendar" id="calendar"></div>
+            </div>
+        </section>
+
+        <!-- Daily Session View -->
+        <section id="daily-view" class="view">
+            <div class="daily-session-container">
+                <!-- Session Mode: Before/During Meditation -->
+                <div id="daily-session-mode" class="daily-mode">
+                    <div class="daily-timer-wrapper">
+                        <svg class="daily-timer-circle" viewBox="0 0 200 200">
+                            <defs>
+                                <linearGradient id="breathGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                    <stop offset="0%" style="stop-color:#a8c99a"/>
+                                    <stop offset="50%" style="stop-color:#8ab842"/>
+                                    <stop offset="100%" style="stop-color:#6b9b3a"/>
+                                </linearGradient>
+                            </defs>
+                            <circle class="daily-circle-bg" cx="100" cy="100" r="85"></circle>
+                            <circle class="daily-circle-progress" cx="100" cy="100" r="85" id="daily-progress-circle"></circle>
+                            <circle class="daily-circle-glow" cx="100" cy="100" r="75" id="daily-glow-circle"></circle>
+                        </svg>
+                        <div class="daily-timer-content">
+                            <div class="daily-timer-display" id="daily-timer-display">10:00</div>
+                            <div class="daily-timer-label" id="daily-timer-label">Sesión diaria de 10 minutos</div>
+                        </div>
+                    </div>
+                    <div class="daily-buttons">
+                        <button id="start-daily-session" class="btn-primary daily-start-btn">
+                            🧘 Iniciar Sesión
+                        </button>
+                        <button id="stop-daily-session" class="btn-secondary daily-stop-btn" style="display: none;">
+                            ⏹️ Detener
+                        </button>
+                    </div>
+                    <div class="daily-options">
+                        <button id="daily-music-toggle" class="daily-option-btn" title="Música">
+                            🎵 Música: On
+                        </button>
+                        <button id="daily-vibration-toggle" class="daily-option-btn" title="Vibración" style="display: none;">
+                            📳 Vibración: On
+                        </button>
+                    </div>
+                    <p class="daily-hint" id="daily-hint">Encuentra un lugar tranquilo y ponte cómodo</p>
+                </div>
+
+                <!-- Log Mode: After Meditation -->
+                <div id="daily-log-mode" class="daily-mode" style="display: none;">
+                    <div class="daily-complete-header">
+                        <div class="daily-complete-icon">✨</div>
+                        <h3>¡Sesión Completada!</h3>
+                        <p class="daily-complete-stats">10 minutos de meditación</p>
+                    </div>
+                    <form id="daily-session-form" class="daily-log-form">
+                        <div class="form-group">
+                            <label for="daily-date">📅 Fecha</label>
+                            <input type="date" id="daily-date" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="daily-location">📍 Ubicación (opcional)</label>
+                            <input type="text" id="daily-location" placeholder="Casa, Oficina, Parque...">
+                        </div>
+                        <div class="form-group">
+                            <label for="daily-notes">📝 Reflexiones/Notas (opcional)</label>
+                            <textarea id="daily-notes" placeholder="¿Cómo te sientes después de la sesión?" rows="4"></textarea>
+                        </div>
+                        <div class="daily-log-buttons">
+                            <button type="submit" class="btn-primary">💾 Guardar</button>
+                            <button type="button" id="skip-daily-log" class="btn-secondary">Omitir</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </section>
+
+        <!-- Log Session View -->
+        <section id="log-view" class="view">
+            <div class="log-entry">
+                <h3>✍️ Registrar Sesión de Meditación</h3>
+                <form id="meditation-form">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="duration">⏱️ Minutos</label>
+                            <input type="number" id="duration" min="1" max="1800" required placeholder="20">
+                        </div>
+                        <div class="form-group">
+                            <label for="date">📅 Fecha</label>
+                            <input type="date" id="date" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="location">📍 Ubicación</label>
+                            <input type="text" id="location" placeholder="Casa">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <textarea id="notes" placeholder="📝 Reflexiones/Notas (opcional)" rows="4"></textarea>
+                    </div>
+                    <button type="submit" class="btn-primary">Registrar Sesión</button>
+                </form>
+            </div>
+
+            <div class="session-history">
+                <h3>📚 Sesiones Recientes</h3>
+                <div id="history-list"></div>
+            </div>
+        </section>
+
+        <!-- Meditation Timer View -->
+        <section id="timer-view" class="view">
+            <div class="daily-session-container">
+                <!-- Timer Mode: Before/During Meditation -->
+                <div id="timer-session-mode" class="daily-mode">
+                    <div class="daily-timer-wrapper">
+                        <canvas id="timer-particle-canvas" class="particle-canvas"></canvas>
+                        <svg class="daily-timer-circle" viewBox="0 0 200 200">
+                            <defs>
+                                <linearGradient id="breathGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                    <stop offset="0%" style="stop-color:#a8c99a"/>
+                                    <stop offset="50%" style="stop-color:#8ab842"/>
+                                    <stop offset="100%" style="stop-color:#6b9b3a"/>
+                                </linearGradient>
+                            </defs>
+                            <circle class="daily-circle-bg" cx="100" cy="100" r="85"></circle>
+                            <circle class="daily-circle-progress" cx="100" cy="100" r="85" id="timer-progress-circle"></circle>
+                            <circle class="daily-circle-glow" cx="100" cy="100" r="75" id="timer-glow-circle"></circle>
+                        </svg>
+                        <div class="daily-timer-content">
+                            <input type="text" class="timer-editable-display" id="timer-display" value="10:00" maxlength="5" />
+                            <div class="daily-timer-label" id="timer-label">Toca para editar</div>
+                        </div>
+                    </div>
+                    <div class="daily-buttons">
+                        <button id="start-timer" class="btn-primary daily-start-btn">
+                            🧘 Iniciar Sesión
+                        </button>
+                        <button id="stop-timer" class="btn-secondary daily-stop-btn" style="display: none;">
+                            ⏹️ Detener
+                        </button>
+                    </div>
+                    <div class="daily-options">
+                        <button id="timer-music-toggle" class="daily-option-btn" title="Música">
+                            🎵 Música: On
+                        </button>
+                        <button id="timer-customize-btn" class="daily-option-btn" title="Personalizar">
+                            ⚙️ Personalizar
+                        </button>
+                        <button id="timer-vibration-toggle" class="daily-option-btn" title="Vibración" style="display: none;">
+                            📳 Vibración: On
+                        </button>
+                    </div>
+                    <p class="daily-hint" id="timer-hint">Encuentra un lugar tranquilo y ponte cómodo</p>
+                </div>
+
+                <!-- Timer Customization Panel -->
+                <div id="timer-customize-panel" class="customize-panel" style="display: none;">
+                    <div class="customize-header">
+                        <h3>⚙️ Personalizar Timer</h3>
+                        <button id="close-customize-panel" class="close-btn">✕</button>
+                    </div>
+                    
+                    <div class="customize-section">
+                        <label class="customize-label">🎨 Animación</label>
+                        <div class="customize-options">
+                            <button class="customize-option-btn active" data-animation="none">
+                                <span class="option-icon">○</span>
+                                <span class="option-text">Simple</span>
+                            </button>
+                            <button class="customize-option-btn" data-animation="ripple">
+                                <span class="option-icon">🌊</span>
+                                <span class="option-text">Ondas Zen</span>
+                            </button>
+                            <button class="customize-option-btn" data-animation="candle">
+                                <span class="option-icon">🕯️</span>
+                                <span class="option-text">Velita</span>
+                            </button>
+                            <button class="customize-option-btn" data-animation="cosmos">
+                                <span class="option-icon">✨</span>
+                                <span class="option-text">Cosmos</span>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="customize-section">
+                        <label class="customize-label">🎵 Música de fondo</label>
+                        <div class="customize-options">
+                            <button class="customize-option-btn active" data-music="ambient">
+                                <span class="option-icon">✨</span>
+                                <span class="option-text">Ambiente</span>
+                            </button>
+                            <button class="customize-option-btn" data-music="naturaleza">
+                                <span class="option-icon">🐦</span>
+                                <span class="option-text">Naturaleza</span>
+                            </button>
+                            <button class="customize-option-btn" data-music="mar">
+                                <span class="option-icon">🌊</span>
+                                <span class="option-text">Mar</span>
+                            </button>
+                        </div>
+                        <button id="preview-music-btn" class="preview-btn">▶️ Escuchar</button>
+                    </div>
+                </div>
+
+                <!-- Log Mode: After Meditation -->
+                <div id="timer-log-mode" class="daily-mode" style="display: none;">
+                    <div class="daily-complete-header">
+                        <div class="daily-complete-icon">✨</div>
+                        <h3>¡Sesión Completada!</h3>
+                        <p class="daily-complete-stats" id="timer-complete-stats">Meditación completada</p>
+                    </div>
+                    <form id="timer-session-form" class="daily-log-form">
+                        <div class="form-group">
+                            <label for="timer-log-date">📅 Fecha</label>
+                            <input type="date" id="timer-log-date" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="timer-log-location">📍 Ubicación (opcional)</label>
+                            <input type="text" id="timer-log-location" placeholder="Casa, Oficina, Parque...">
+                        </div>
+                        <div class="form-group">
+                            <label for="timer-log-notes">📝 Reflexiones/Notas (opcional)</label>
+                            <textarea id="timer-log-notes" placeholder="¿Cómo te sientes después de la sesión?" rows="4"></textarea>
+                        </div>
+                        <div class="daily-log-buttons">
+                            <button type="submit" class="btn-primary">💾 Guardar</button>
+                            <button type="button" id="skip-timer-log" class="btn-secondary">Omitir</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </section>
+
+        <!-- Stats View -->
+        <section id="stats-view" class="view">
+            <div class="stats-overview">
+                <h3>Resumen 2026</h3>
+                <div class="global-stats-grid">
+                    <div class="global-stat-box">
+                        <div class="global-stat-value" id="year-total-time">0</div>
+                        <div class="global-stat-label">tiempo total</div>
+                    </div>
+                    <div class="global-stat-box">
+                        <div class="global-stat-value" id="year-total-sessions">0</div>
+                        <div class="global-stat-label">sesiones</div>
+                    </div>
+                    <div class="global-stat-box">
+                        <div class="global-stat-value" id="year-avg-duration">0</div>
+                        <div class="global-stat-label">duración promedio</div>
+                    </div>
+                    <div class="global-stat-box">
+                        <div class="global-stat-value" id="year-days-count">0</div>
+                        <div class="global-stat-label">días meditados</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="chart-container">
+                <h3>Tiempo Total por Mes</h3>
+                <canvas id="monthlyMinutesChart"></canvas>
+            </div>
+            
+            <div class="chart-container">
+                <h3>Días Meditados por Mes</h3>
+                <canvas id="monthlyDaysChart"></canvas>
+            </div>
+        </section>
+    </div>
+
+    <!-- Session Detail Modal -->
+    <div id="session-modal" class="modal">
+        <div class="modal-content">
+            <span class="modal-close">&times;</span>
+            <h3 id="modal-title">📋 Detalles de la Sesión</h3>
+            <div id="modal-body">
+                <div class="modal-field">
+                    <label>⏱️ Duración</label>
+                    <input type="number" id="modal-duration" min="1">
+                    <span class="modal-text" id="modal-duration-text"></span>
+                </div>
+                <div class="modal-field">
+                    <label>📅 Fecha</label>
+                    <input type="date" id="modal-date">
+                    <span class="modal-text" id="modal-date-text"></span>
+                </div>
+                <div class="modal-field">
+                    <label>📍 Ubicación</label>
+                    <input type="text" id="modal-location">
+                    <span class="modal-text" id="modal-location-text"></span>
+                </div>
+                <div class="modal-field">
+                    <label>📝 Reflexiones/Notas</label>
+                    <input type="text" id="modal-notes">
+                    <span class="modal-text" id="modal-notes-text"></span>
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button id="modal-edit" class="btn-primary">Editar</button>
+                <button id="modal-save" class="btn-primary" style="display: none;">Guardar</button>
+                <button id="modal-cancel" class="btn-secondary" style="display: none;">Cancelar</button>
+                <button id="modal-delete" class="btn-delete">Eliminar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Day Sessions Modal -->
+    <div id="day-sessions-modal" class="modal">
+        <div class="modal-content">
+            <span class="modal-close day-sessions-close">&times;</span>
+            <h3 id="day-sessions-title">📋 Sesiones</h3>
+            <div id="day-sessions-list"></div>
+        </div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div id="settings-modal" class="modal">
+        <div class="modal-content">
+            <span class="modal-close settings-close">&times;</span>
+            <h3>Configuración</h3>
+            <div class="settings-section" id="name-section" style="display: none;">
+                <h4>Tu Nombre</h4>
+                <input type="text" id="settings-name" placeholder="Nombre" class="settings-input">
+            </div>
+            <div class="settings-section">
+                <h4>Icono de Meditación</h4>
+                <p class="settings-description">Elige tu icono preferido para los días del calendario</p>
+                <div class="emoji-grid">
+                    <button class="emoji-option" data-emoji="🧘" title="Person meditating">🧘</button>
+                    <button class="emoji-option" data-emoji="🕉️" title="Om symbol">🕉️</button>
+                    <button class="emoji-option" data-emoji="🙏" title="Praying hands">🙏</button>
+                    <button class="emoji-option" data-emoji="☮️" title="Peace symbol">☮️</button>
+                    <button class="emoji-option" data-emoji="🌺" title="Hibiscus flower">🌺</button>
+                    <button class="emoji-option" data-emoji="✨" title="Sparkles">✨</button>
+                    <button class="emoji-option" data-emoji="🌸" title="Cherry blossom">🌸</button>
+                    <button class="emoji-option" data-emoji="☯️" title="Yin yang">☯️</button>
+                </div>
+            </div>
+            <button id="signout-btn" class="btn-secondary" style="display: none; margin-top: 1.5rem; width: 100%;">Cerrar Sesión</button>
+        </div>
+    </div>
+
+    <!-- Confirmation Modal -->
+    <div id="confirm-modal" class="modal">
+        <div class="modal-content confirm-content">
+            <h3>¿Eliminar Sesión?</h3>
+            <p>Esta acción no se puede deshacer.</p>
+            <div class="modal-actions">
+                <button id="confirm-yes" class="btn-delete">Eliminar</button>
+                <button id="confirm-no" class="btn-secondary">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
+    <audio id="bell-sound" preload="auto"></audio>
+    
+    <!-- Fullscreen Candle Mode Overlay -->
+    <div id="candle-fullscreen-overlay" class="candle-overlay" style="display: none;">
+        <canvas id="candle-fullscreen-canvas"></canvas>
+        <div class="candle-timer-content">
+            <svg class="candle-timer-circle" viewBox="0 0 200 200">
+                <circle class="candle-circle-bg" cx="100" cy="100" r="85"></circle>
+                <circle class="candle-circle-progress" cx="100" cy="100" r="85" id="candle-progress-circle"></circle>
+            </svg>
+            <div class="candle-timer-display" id="candle-timer-display">10:00</div>
+        </div>
+        <div class="candle-phrase" id="candle-phrase"></div>
+        <button class="candle-exit-btn" id="candle-exit-btn">✕</button>
+    </div>
+    
+    <!-- Fullscreen Ripple/Ondas Zen Mode Overlay -->
+    <div id="ripple-fullscreen-overlay" class="ripple-overlay" style="display: none;">
+        <canvas id="ripple-fullscreen-canvas"></canvas>
+        <div class="ripple-timer-content">
+            <svg class="ripple-timer-circle" viewBox="0 0 200 200">
+                <circle class="ripple-circle-bg" cx="100" cy="100" r="85"></circle>
+                <circle class="ripple-circle-progress" cx="100" cy="100" r="85" id="ripple-progress-circle"></circle>
+            </svg>
+            <div class="ripple-timer-display" id="ripple-timer-display">10:00</div>
+        </div>
+        <div class="ripple-phrase" id="ripple-phrase"></div>
+        <button class="ripple-exit-btn" id="ripple-exit-btn">✕</button>
+    </div>
+    
+    <!-- Fullscreen Cosmos/Starfield Mode Overlay -->
+    <div id="cosmos-fullscreen-overlay" class="cosmos-overlay" style="display: none;">
+        <canvas id="cosmos-fullscreen-canvas"></canvas>
+        <div class="cosmos-timer-content">
+            <svg class="cosmos-timer-circle" viewBox="0 0 200 200">
+                <circle class="cosmos-circle-bg" cx="100" cy="100" r="85"></circle>
+                <circle class="cosmos-circle-progress" cx="100" cy="100" r="85" id="cosmos-progress-circle"></circle>
+            </svg>
+            <div class="cosmos-timer-display" id="cosmos-timer-display">10:00</div>
+        </div>
+        <div class="cosmos-phrase" id="cosmos-phrase"></div>
+        <button class="cosmos-exit-btn" id="cosmos-exit-btn">✕</button>
+    </div>
+    
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    
+    <!-- Firebase Configuration -->
+    <script src="firebase-config.js"></script>
+    
+    <!-- App Script -->
+    <script src="app.js"></script>
+</body>
+</html>
