@@ -2100,6 +2100,36 @@ function enableCandleMode() {
     document.body.classList.add('candle-mode');
 }
 
+// Request native browser fullscreen (hides mobile navigation bar)
+function requestNativeFullscreen() {
+    const elem = document.documentElement;
+    if (elem.requestFullscreen) {
+        elem.requestFullscreen().catch(err => console.log('Fullscreen request failed:', err));
+    } else if (elem.webkitRequestFullscreen) { // Safari/iOS
+        elem.webkitRequestFullscreen();
+    } else if (elem.mozRequestFullScreen) { // Firefox
+        elem.mozRequestFullScreen();
+    } else if (elem.msRequestFullscreen) { // IE/Edge
+        elem.msRequestFullscreen();
+    }
+}
+
+// Exit native browser fullscreen
+function exitNativeFullscreen() {
+    if (document.fullscreenElement || document.webkitFullscreenElement || 
+        document.mozFullScreenElement || document.msFullscreenElement) {
+        if (document.exitFullscreen) {
+            document.exitFullscreen().catch(err => console.log('Exit fullscreen failed:', err));
+        } else if (document.webkitExitFullscreen) {
+            document.webkitExitFullscreen();
+        } else if (document.mozCancelFullScreen) {
+            document.mozCancelFullScreen();
+        } else if (document.msExitFullscreen) {
+            document.msExitFullscreen();
+        }
+    }
+}
+
 function disableCandleMode() {
     document.body.classList.remove('candle-mode');
     // Only exit fullscreen if we're actually in fullscreen mode
@@ -2114,6 +2144,9 @@ function enterCandleFullscreen() {
     
     const overlay = document.getElementById('candle-fullscreen-overlay');
     if (!overlay) return;
+    
+    // Request native fullscreen (hides mobile navigation bar)
+    requestNativeFullscreen();
     
     candleFullscreenActive = true;
     overlay.style.display = 'flex';
@@ -2157,6 +2190,9 @@ function exitCandleFullscreen() {
     
     const overlay = document.getElementById('candle-fullscreen-overlay');
     if (!overlay) return;
+    
+    // Exit native fullscreen
+    exitNativeFullscreen();
     
     candleFullscreenActive = false;
     overlay.classList.remove('visible');
@@ -2447,6 +2483,9 @@ function enterRippleFullscreen() {
     const overlay = document.getElementById('ripple-fullscreen-overlay');
     if (!overlay) return;
     
+    // Request native fullscreen (hides mobile navigation bar)
+    requestNativeFullscreen();
+    
     rippleFullscreenActive = true;
     overlay.style.display = 'flex';
     
@@ -2489,6 +2528,9 @@ function exitRippleFullscreen() {
     
     const overlay = document.getElementById('ripple-fullscreen-overlay');
     if (!overlay) return;
+    
+    // Exit native fullscreen
+    exitNativeFullscreen();
     
     rippleFullscreenActive = false;
     overlay.classList.remove('visible');
@@ -2738,6 +2780,9 @@ function enterCosmosFullscreen() {
     const overlay = document.getElementById('cosmos-fullscreen-overlay');
     if (!overlay) return;
     
+    // Request native fullscreen (hides mobile navigation bar)
+    requestNativeFullscreen();
+    
     cosmosFullscreenActive = true;
     overlay.style.display = 'flex';
     
@@ -2777,6 +2822,9 @@ function exitCosmosFullscreen() {
     
     const overlay = document.getElementById('cosmos-fullscreen-overlay');
     if (!overlay) return;
+    
+    // Exit native fullscreen
+    exitNativeFullscreen();
     
     cosmosFullscreenActive = false;
     overlay.classList.remove('visible');
