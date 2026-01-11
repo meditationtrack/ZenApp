@@ -4,6 +4,11 @@
     box-sizing: border-box;
 }
 
+/* iOS safe area support for PWA - background extends to edges */
+html, body {
+    background: var(--bg-primary, #f5f1e8);
+}
+
 /* Hide scrollbars when fullscreen mode is active */
 body:has(.candle-overlay.visible),
 body:has(.ripple-overlay.visible),
@@ -93,6 +98,7 @@ body.candle-mode .customize-panel {
     align-items: center;
     justify-content: center;
     overflow: hidden;
+    padding-top: env(safe-area-inset-top, 0);
 }
 
 .candle-overlay.visible {
@@ -109,7 +115,7 @@ body.candle-mode .customize-panel {
 
 .candle-timer-content {
     position: absolute;
-    top: 15%;
+    top: calc(15% + env(safe-area-inset-top, 0px));
     left: 50%;
     transform: translateX(-50%);
     z-index: 2;
@@ -214,6 +220,7 @@ body.candle-mode .customize-panel {
     align-items: center;
     justify-content: center;
     overflow: hidden;
+    padding-top: env(safe-area-inset-top, 0);
 }
 
 .ripple-overlay.visible {
@@ -230,7 +237,7 @@ body.candle-mode .customize-panel {
 
 .ripple-timer-content {
     position: absolute;
-    top: 15%;
+    top: calc(15% + env(safe-area-inset-top, 0px));
     left: 50%;
     transform: translateX(-50%);
     z-index: 2;
@@ -335,6 +342,7 @@ body.candle-mode .customize-panel {
     align-items: center;
     justify-content: center;
     overflow: hidden;
+    padding-top: env(safe-area-inset-top, 0);
 }
 
 .cosmos-overlay.visible {
@@ -351,7 +359,7 @@ body.candle-mode .customize-panel {
 
 .cosmos-timer-content {
     position: absolute;
-    top: 15%;
+    top: calc(15% + env(safe-area-inset-top, 0px));
     left: 50%;
     transform: translateX(-50%);
     z-index: 2;
@@ -488,6 +496,10 @@ body {
     max-width: 600px;
     margin: 0 auto;
     padding: 1rem;
+    padding-top: calc(1rem + env(safe-area-inset-top, 0px));
+    padding-left: calc(1rem + env(safe-area-inset-left, 0px));
+    padding-right: calc(1rem + env(safe-area-inset-right, 0px));
+    padding-bottom: calc(1rem + env(safe-area-inset-bottom, 0px));
 }
 
 /* Header */
@@ -495,6 +507,7 @@ header {
     text-align: center;
     margin-bottom: 1.5rem;
     padding-bottom: 1rem;
+    padding-top: calc(env(safe-area-inset-top, 20px) + 1.5rem);
     border-bottom: 1px solid var(--border);
     position: relative;
 }
@@ -555,7 +568,7 @@ header h1::after {
 
 .settings-btn {
     position: absolute;
-    top: 0;
+    top: calc(env(safe-area-inset-top, 20px) + 0.5rem);
     right: 0;
     background: transparent;
     border: none;
