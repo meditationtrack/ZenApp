@@ -865,20 +865,6 @@ function initFullscreenButton() {
     if (fullscreenBtn) {
         fullscreenBtn.addEventListener('click', toggleAppFullscreen);
     }
-    
-    // Try to auto-enter fullscreen on first user interaction
-    // (browsers require user gesture for fullscreen)
-    const autoFullscreen = () => {
-        if (!isNativeFullscreen()) {
-            requestNativeFullscreen();
-        }
-        // Remove listeners after first interaction
-        document.removeEventListener('click', autoFullscreen);
-        document.removeEventListener('touchstart', autoFullscreen);
-    };
-    
-    document.addEventListener('click', autoFullscreen, { once: true });
-    document.addEventListener('touchstart', autoFullscreen, { once: true });
 }
 
 // Settings functionality
